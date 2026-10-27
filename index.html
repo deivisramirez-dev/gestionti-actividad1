@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaaS Riesgos TI · MAGERIT v3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <header class="bg-slate-900 text-white rounded-xl px-6 py-5 mb-6 shadow">
+            <p class="text-slate-300 text-sm">Metodología MAGERIT v3 · Enfoque cualitativo</p>
+            <h1 class="text-2xl md:text-3xl font-bold mt-1">Plataforma SaaS de Gestión de Riesgos</h1>
+            <p class="text-slate-200 mt-2">Cliente: Bufete de Abogados · Informe para la dirección</p>
+        </header>
+
+        <div id="cumplimiento" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6"></div>
+
+        <section class="bg-white rounded-xl shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-slate-900">1. Identificación de activos</h2>
+            <p class="text-sm text-slate-600 mt-1 mb-4">Registra el inventario de activos de información. El caso del bufete parte de 10 activos críticos.</p>
+            <form id="form-activo" class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+                <div class="md:col-span-3">
+                    <label for="activo-nombre" class="block text-sm font-medium mb-1">Activo crítico</label>
+                    <input id="activo-nombre" required maxlength="120" placeholder="Ej. Servidor de base de datos" class="w-full border border-slate-300 rounded-md px-3 py-2">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="activo-tipo" class="block text-sm font-medium mb-1">Tipo</label>
+                    <select id="activo-tipo" class="w-full border border-slate-300 rounded-md px-3 py-2 bg-white">
+                        <option>Información</option>
+                        <option>Infraestructura</option>
+                        <option>Aplicación</option>
+                        <option>Software</option>
+                        <option>Servicio</option>
+                    </select>
+                </div>
+                <button type="submit" class="bg-slate-900 text-white rounded-md px-4 py-2 font-medium hover:bg-slate-700">Registrar activo</button>
+            </form>
+            <p id="activo-error" class="text-sm text-red-700 mt-2" role="status"></p>
+            <div class="overflow-x-auto mt-4">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-100 text-left">
+                        <tr>
+                            <th class="py-2 px-3">Activo</th>
+                            <th class="py-2 px-3">Tipo</th>
+                            <th class="py-2 px-3">Amenazas</th>
+                            <th class="py-2 px-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-activos"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-xl shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-slate-900">2. Matriz de riesgos (MAGERIT v3)</h2>
+            <p class="text-sm text-slate-600 mt-1">Asocia al menos una amenaza a cada activo. La probabilidad y el impacto usan la escala Alto, Medio y Bajo. El riesgo inherente se calcula solo: probabilidad × impacto.</p>
+            <p class="text-sm text-slate-500 mt-1 mb-4">Alto = 3 · Medio = 2 · Bajo = 1. Resultado: 6–9 Alto, 3–4 Medio, 1–2 Bajo.</p>
+            <form id="form-amenaza" class="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+                <div class="md:col-span-2">
+                    <label for="select-activo" class="block text-sm font-medium mb-1">Activo</label>
+                    <select id="select-activo" class="w-full border border-slate-300 rounded-md px-3 py-2 bg-white"></select>
+                </div>
+                <div class="md:col-span-2">
+                    <label for="amenaza" class="block text-sm font-medium mb-1">Amenaza</label>
+                    <input id="amenaza" required maxlength="120" placeholder="Ej. Ransomware, caída eléctrica, acceso no autorizado" class="w-full border border-slate-300 rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label for="probabilidad" class="block text-sm font-medium mb-1">Probabilidad</label>
+                    <select id="probabilidad" class="w-full border border-slate-300 rounded-md px-3 py-2 bg-white">
+                        <option value="3">Alto</option>
+                        <option value="2">Medio</option>
+                        <option value="1">Bajo</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="impacto" class="block text-sm font-medium mb-1">Impacto</label>
+                    <select id="impacto" class="w-full border border-slate-300 rounded-md px-3 py-2 bg-white">
+                        <option value="3">Alto</option>
+                        <option value="2">Medio</option>
+                        <option value="1">Bajo</option>
+                    </select>
+                </div>
+                <button type="submit" class="md:col-span-6 md:justify-self-end bg-blue-800 text-white rounded-md px-4 py-2 font-medium hover:bg-blue-700">Asociar amenaza</button>
+            </form>
+            <p id="amenaza-error" class="text-sm text-red-700 mt-2" role="status"></p>
+
+            <div class="overflow-x-auto mt-5">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-100 text-left">
+                        <tr>
+                            <th class="py-2 px-3">#</th>
+                            <th class="py-2 px-3">Activo</th>
+                            <th class="py-2 px-3">Amenaza</th>
+                            <th class="py-2 px-3">Probabilidad</th>
+                            <th class="py-2 px-3">Impacto</th>
+                            <th class="py-2 px-3">Riesgo inherente</th>
+                            <th class="py-2 px-3"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-riesgos"></tbody>
+                </table>
+            </div>
+
+            <h3 class="font-semibold mt-6 mb-2">Mapa cualitativo</h3>
+            <div class="overflow-x-auto">
+                <table id="mapa-calor" class="text-sm border border-slate-200"></table>
+            </div>
+        </section>
+
+        <section class="bg-white rounded-xl shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-slate-900">3. Propuesta de controles</h2>
+            <p class="text-sm text-slate-600 mt-1 mb-4">Para cada uno de los 5 riesgos más críticos, registra un Control General o un Control de Aplicación. El control es el procedimiento con el que el bufete cubre el objetivo y reduce el riesgo.</p>
+            <div id="controles-container" class="space-y-4"></div>
+        </section>
+
+        <section class="bg-white rounded-xl shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold text-slate-900">4. Informe ejecutivo</h2>
+            <p class="text-sm text-slate-600 mt-1 mb-3">Los hallazgos se calculan a partir de la matriz. Las conclusiones las redacta el equipo y viajan al PDF, junto con la matriz y los cinco controles. El informe se limita a 2 páginas.</p>
+            <h3 class="text-sm font-semibold text-slate-700">Hallazgos que irán al informe</h3>
+            <p id="hallazgos-auto" class="text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-md p-3 mt-1 mb-4"></p>
+            <label for="resumen" class="block text-sm font-medium mb-1">Conclusiones para la dirección</label>
+            <textarea id="resumen" rows="5" maxlength="700" class="w-full border border-slate-300 rounded-md p-3"></textarea>
+            <p id="resumen-count" class="text-xs text-slate-500 mt-1 text-right"></p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                <div>
+                    <label for="github-link" class="block text-sm font-medium mb-1">Enlace del repositorio GitHub</label>
+                    <input id="github-link" type="url" placeholder="https://github.com/deivisramirez-dev/gestionti-actividad1" class="w-full border border-slate-300 rounded-md px-3 py-2">
+                </div>
+                <div>
+                    <label for="app-link" class="block text-sm font-medium mb-1">Enlace de la aplicación en Vercel</label>
+                    <input id="app-link" type="url" placeholder="https://saas-riesgos-magerit.vercel.app" class="w-full border border-slate-300 rounded-md px-3 py-2">
+                </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Estos enlaces se imprimen al final del informe cuando están completos.</p>
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 mt-6">
+                <button id="btn-pdf" type="button" class="bg-emerald-700 text-white px-5 py-3 rounded-lg font-semibold hover:bg-emerald-800">Generar informe ejecutivo (PDF)</button>
+                <button id="btn-restaurar" type="button" class="text-sm text-slate-600 underline">Restaurar el ejemplo del bufete</button>
+            </div>
+            <p id="pdf-status" class="text-sm mt-3" role="status"></p>
+        </section>
+    </div>
+
+    <script>
+        const STORAGE_KEY = "magerit-bufete-v1";
+        const ETIQUETA = { 3: "Alto", 2: "Medio", 1: "Bajo" };
+        const RESUMEN_MAX = 700;
+
+        function crearEstadoInicial() {
+            return {
+                version: 1,
+                seq: 10,
+                assets: [
+                    { id: "a1", nombre: "Servidor de base de datos de expedientes", tipo: "Infraestructura" },
+                    { id: "a2", nombre: "Expedientes digitales de clientes", tipo: "Información" },
+                    { id: "a3", nombre: "Pasarela de pago de honorarios", tipo: "Aplicación" },
+                    { id: "a4", nombre: "Código fuente del portal del cliente", tipo: "Software" },
+                    { id: "a5", nombre: "Correo corporativo", tipo: "Servicio" },
+                    { id: "a6", nombre: "Copias de seguridad", tipo: "Infraestructura" },
+                    { id: "a7", nombre: "Sistema de gestión documental", tipo: "Aplicación" },
+                    { id: "a8", nombre: "Equipos de los abogados", tipo: "Infraestructura" },
+                    { id: "a9", nombre: "Credenciales de acceso remoto", tipo: "Información" },
+                    { id: "a10", nombre: "Contratos y poderes digitales", tipo: "Información" }
+                ],
+                risks: [
+                    { id: "r1", assetId: "a1", amenaza: "Ransomware", probabilidad: 3, impacto: 3 },
+                    { id: "r2", assetId: "a2", amenaza: "Acceso no autorizado", probabilidad: 3, impacto: 3 },
+                    { id: "r3", assetId: "a3", amenaza: "Fraude en transacciones", probabilidad: 3, impacto: 3 },
+                    { id: "r4", assetId: "a4", amenaza: "Fuga de código", probabilidad: 1, impacto: 3 },
+                    { id: "r5", assetId: "a5", amenaza: "Phishing", probabilidad: 3, impacto: 2 },
+                    { id: "r6", assetId: "a6", amenaza: "Corrupción de respaldos", probabilidad: 2, impacto: 3 },
+                    { id: "r7", assetId: "a7", amenaza: "Pérdida de integridad", probabilidad: 2, impacto: 2 },
+                    { id: "r8", assetId: "a8", amenaza: "Robo o extravío", probabilidad: 2, impacto: 2 },
+                    { id: "r9", assetId: "a9", amenaza: "Suplantación de identidad", probabilidad: 3, impacto: 3 },
+                    { id: "r10", assetId: "a10", amenaza: "Alteración no autorizada", probabilidad: 1, impacto: 3 }
+                ],
+                controles: {
+                    r1: { tipo: "Control General", descripcion: "Copias inmutables fuera de línea, segmentación de la red y procedimiento de respuesta a ransomware." },
+                    r2: { tipo: "Control de Aplicación", descripcion: "Acceso por roles al expediente, cifrado y registro de auditoría de consulta y descarga." },
+                    r3: { tipo: "Control de Aplicación", descripcion: "Tokenización del pago, conciliación diaria y alerta de transacciones atípicas." },
+                    r4: { tipo: "Control de Aplicación", descripcion: "Repositorio privado, revisión de accesos y prohibición de copiar el código a equipos personales." },
+                    r5: { tipo: "Control General", descripcion: "Filtro antiphishing, capacitación al personal y confirmación de pagos por un segundo canal." },
+                    r6: { tipo: "Control General", descripcion: "Prueba periódica de restauración, copia desconectada y alimentación eléctrica de respaldo." },
+                    r7: { tipo: "Control de Aplicación", descripcion: "Control de versiones del documento y bloqueo de cambios sin autorización del responsable." },
+                    r8: { tipo: "Control General", descripcion: "Cifrado de disco, inventario de equipos y procedimiento de baja cuando un portátil sale del bufete." },
+                    r9: { tipo: "Control de Aplicación", descripcion: "Autenticación multifactor en el acceso remoto y revocación inmediata de sesiones comprometidas." },
+                    r10: { tipo: "Control de Aplicación", descripcion: "Firma electrónica y cierre de versión para impedir alteraciones posteriores del contrato o poder." }
+                },
+                resumen: "Seis riesgos alcanzan nivel alto. Este plan trata los cinco primeros: ransomware en la base de datos de expedientes, acceso no autorizado a los expedientes digitales, suplantación de las credenciales de acceso remoto, fraude en la pasarela de pago y phishing en el correo corporativo. El tratamiento combina controles generales de continuidad y concienciación con controles de aplicación de acceso, autenticación y pagos. El sexto riesgo alto, la corrupción de las copias de seguridad, queda para la siguiente iteración. Se recomienda a la dirección autorizar este plan antes de abordar los riesgos medios.",
+                github: "https://github.com/deivisramirez-dev/gestionti-actividad1",
+                vercel: ""
+            };
+        }
+
+        function cargarEstado() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return null;
+                const data = JSON.parse(raw);
+                if (!data || !Array.isArray(data.assets) || !Array.isArray(data.risks) || typeof data.controles !== "object") {
+                    return null;
+                }
+                data.resumen = data.resumen || "";
+                data.github = data.github || "";
+                data.vercel = data.vercel || "";
+                data.seq = Number(data.seq) || data.assets.length + data.risks.length;
+                return data;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function guardar() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (error) {
+                /* El prototipo sigue usable si el navegador bloquea el almacenamiento. */
+            }
+        }
+
+        let state = cargarEstado() || crearEstadoInicial();
+
+        function nivelRiesgo(score) {
+            if (score >= 6) return "Alto";
+            if (score >= 3) return "Medio";
+            return "Bajo";
+        }
+
+        function claseNivel(nivel) {
+            if (nivel === "Alto") return "bg-red-100 text-red-800";
+            if (nivel === "Medio") return "bg-amber-100 text-amber-900";
+            return "bg-emerald-100 text-emerald-800";
+        }
+
+        function vaciar(nodo) {
+            while (nodo.firstChild) nodo.removeChild(nodo.firstChild);
+        }
+
+        function celda(texto, clase) {
+            const td = document.createElement("td");
+            td.className = clase || "py-2 px-3 align-top";
+            td.textContent = texto;
+            return td;
+        }
+
+        function riesgosOrdenados() {
+            return state.risks.map(function (riesgo) {
+                const asset = state.assets.find(function (item) { return item.id === riesgo.assetId; });
+                const score = riesgo.probabilidad * riesgo.impacto;
+                return {
+                    id: riesgo.id,
+                    assetId: riesgo.assetId,
+                    amenaza: riesgo.amenaza,
+                    probabilidad: riesgo.probabilidad,
+                    impacto: riesgo.impacto,
+                    asset: asset,
+                    score: score,
+                    nivel: nivelRiesgo(score)
+                };
+            }).filter(function (riesgo) {
+                return riesgo.asset;
+            }).sort(function (a, b) {
+                if (b.score !== a.score) return b.score - a.score;
+                if (b.probabilidad !== a.probabilidad) return b.probabilidad - a.probabilidad;
+                if (b.impacto !== a.impacto) return b.impacto - a.impacto;
+                return a.asset.nombre.localeCompare(b.asset.nombre, "es");
+            });
+        }
+
+        function activosSinAmenaza() {
+            return state.assets.filter(function (asset) {
+                return !state.risks.some(function (riesgo) { return riesgo.assetId === asset.id; });
+            });
+        }
+
+        function topCinco() {
+            return riesgosOrdenados().slice(0, 5);
+        }
+
+        function parrafoHallazgos(lista) {
+            const altos = lista.filter(function (r) { return r.nivel === "Alto"; }).length;
+            const medios = lista.filter(function (r) { return r.nivel === "Medio"; }).length;
+            const bajos = lista.filter(function (r) { return r.nivel === "Bajo"; }).length;
+            const sin = activosSinAmenaza();
+            const partes = [
+                "El inventario registra " + state.assets.length + " activos de información.",
+                "Hay " + lista.length + " amenazas valoradas con la escala Alto, Medio y Bajo."
+            ];
+            if (sin.length) {
+                partes.push("Sin amenaza asociada: " + sin.map(function (a) { return a.nombre; }).join(", ") + ".");
+            } else if (state.assets.length) {
+                partes.push("Todos los activos tienen al menos una amenaza.");
+            }
+            partes.push("Riesgo inherente: " + altos + " altos, " + medios + " medios y " + bajos + " bajos.");
+            const top = lista.slice(0, 5);
+            if (top.length) {
+                const detalle = top.map(function (r, i) {
+                    return (i + 1) + ") " + r.asset.nombre + " — " + r.amenaza + " (" + r.nivel + ", " + r.score + ")";
+                }).join("; ");
+                partes.push("Los " + top.length + " riesgos más críticos son: " + detalle + ".");
+            }
+            return partes.join(" ");
+        }
+
+        function nuevoId(prefijo) {
+            state.seq += 1;
+            return prefijo + state.seq;
+        }
+
+        function asegurarControl(id) {
+            if (!state.controles[id]) {
+                state.controles[id] = { tipo: "Control General", descripcion: "" };
+            }
+            return state.controles[id];
+        }
+
+        function chip(ok, texto) {
+            const span = document.createElement("span");
+            span.className = "rounded-lg px-3 py-2 text-sm font-medium " + (ok ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-900");
+            span.textContent = texto;
+            return span;
+        }
+
+        function pintarCumplimiento() {
+            const contenedor = document.getElementById("cumplimiento");
+            const lista = riesgosOrdenados();
+            const top = lista.slice(0, 5);
+            const controlesOk = top.length >= 5 && top.every(function (r) {
+                return (state.controles[r.id] && state.controles[r.id].descripcion.trim());
+            });
+            vaciar(contenedor);
+            contenedor.appendChild(chip(state.assets.length >= 10, "Inventario: " + state.assets.length + " activos"));
+            contenedor.appendChild(chip(state.assets.length > 0 && activosSinAmenaza().length === 0, "Amenazas: " + (activosSinAmenaza().length === 0 ? "una o más por activo" : activosSinAmenaza().length + " activos sin amenaza")));
+            contenedor.appendChild(chip(controlesOk, "Controles del top 5: " + top.filter(function (r) {
+                return state.controles[r.id] && state.controles[r.id].descripcion.trim();
+            }).length + " / " + Math.min(5, top.length || 5)));
+        }
+
+        function pintarActivos() {
+            const tbody = document.getElementById("tabla-activos");
+            vaciar(tbody);
+            if (!state.assets.length) {
+                const tr = document.createElement("tr");
+                const td = celda("Aún no hay activos en el inventario.", "py-3 px-3 text-slate-500");
+                td.colSpan = 4;
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                return;
+            }
+            state.assets.forEach(function (asset) {
+                const cantidad = state.risks.filter(function (r) { return r.assetId === asset.id; }).length;
+                const tr = document.createElement("tr");
+                tr.className = "border-t border-slate-200";
+                tr.appendChild(celda(asset.nombre));
+                tr.appendChild(celda(asset.tipo));
+                const tdAmenazas = document.createElement("td");
+                tdAmenazas.className = "py-2 px-3";
+                const marca = document.createElement("span");
+                marca.className = "px-2 py-0.5 rounded text-xs font-semibold " + (cantidad ? "bg-slate-200 text-slate-800" : "bg-amber-100 text-amber-900");
+                marca.textContent = cantidad ? (cantidad === 1 ? "1 amenaza" : cantidad + " amenazas") : "Sin amenaza";
+                tdAmenazas.appendChild(marca);
+                tr.appendChild(tdAmenazas);
+                const tdAccion = document.createElement("td");
+                tdAccion.className = "py-2 px-3 text-right";
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.dataset.eliminarActivo = asset.id;
+                btn.className = "text-sm text-red-700 hover:underline";
+                btn.textContent = "Quitar";
+                tdAccion.appendChild(btn);
+                tr.appendChild(tdAccion);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function pintarSelectActivos() {
+            const select = document.getElementById("select-activo");
+            const previo = select.value;
+            vaciar(select);
+            state.assets.forEach(function (asset) {
+                const opt = document.createElement("option");
+                opt.value = asset.id;
+                opt.textContent = asset.nombre;
+                select.appendChild(opt);
+            });
+            if ([].some.call(select.options, function (opt) { return opt.value === previo; })) {
+                select.value = previo;
+            }
+        }
+
+        function selectEscala(riskId, field, value) {
+            const select = document.createElement("select");
+            select.dataset.riskId = riskId;
+            select.dataset.field = field;
+            select.className = "border border-slate-300 rounded px-2 py-1 bg-white";
+            select.setAttribute("aria-label", (field === "probabilidad" ? "Probabilidad" : "Impacto") + " del riesgo " + riskId);
+            [3, 2, 1].forEach(function (valor) {
+                const opt = document.createElement("option");
+                opt.value = String(valor);
+                opt.textContent = ETIQUETA[valor];
+                if (valor === value) opt.selected = true;
+                select.appendChild(opt);
+            });
+            return select;
+        }
+
+        function pintarRiesgos() {
+            const tbody = document.getElementById("tabla-riesgos");
+            const lista = riesgosOrdenados();
+            vaciar(tbody);
+            if (!lista.length) {
+                const tr = document.createElement("tr");
+                const td = celda("Asocia una amenaza para construir la matriz.", "py-3 px-3 text-slate-500");
+                td.colSpan = 7;
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                return;
+            }
+            lista.forEach(function (riesgo, index) {
+                const tr = document.createElement("tr");
+                tr.className = "border-t border-slate-200" + (index < 5 ? " bg-slate-50" : "");
+                tr.appendChild(celda(index < 5 ? String(index + 1) : ""));
+                tr.appendChild(celda(riesgo.asset.nombre));
+                tr.appendChild(celda(riesgo.amenaza));
+                const tdP = document.createElement("td");
+                tdP.className = "py-2 px-3";
+                tdP.appendChild(selectEscala(riesgo.id, "probabilidad", riesgo.probabilidad));
+                tr.appendChild(tdP);
+                const tdI = document.createElement("td");
+                tdI.className = "py-2 px-3";
+                tdI.appendChild(selectEscala(riesgo.id, "impacto", riesgo.impacto));
+                tr.appendChild(tdI);
+                const tdR = document.createElement("td");
+                tdR.className = "py-2 px-3";
+                const badge = document.createElement("span");
+                badge.className = "px-2 py-1 rounded text-xs font-bold " + claseNivel(riesgo.nivel);
+                badge.textContent = riesgo.nivel + " (" + riesgo.score + ")";
+                tdR.appendChild(badge);
+                if (index < 5) {
+                    const nota = document.createElement("span");
+                    nota.className = "ml-2 text-xs text-slate-500";
+                    nota.textContent = "Top 5";
+                    tdR.appendChild(nota);
+                }
+                tr.appendChild(tdR);
+                const tdAccion = document.createElement("td");
+                tdAccion.className = "py-2 px-3 text-right";
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.dataset.eliminarRiesgo = riesgo.id;
+                btn.className = "text-sm text-red-700 hover:underline";
+                btn.textContent = "Quitar";
+                tdAccion.appendChild(btn);
+                tr.appendChild(tdAccion);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function pintarCalor() {
+            const tabla = document.getElementById("mapa-calor");
+            const lista = riesgosOrdenados();
+            vaciar(tabla);
+            const thead = document.createElement("thead");
+            const headRow = document.createElement("tr");
+            ["", "Impacto Bajo", "Impacto Medio", "Impacto Alto"].forEach(function (texto) {
+                const th = document.createElement("th");
+                th.className = "border border-slate-200 px-3 py-2 bg-slate-100 text-left";
+                th.textContent = texto;
+                headRow.appendChild(th);
+            });
+            thead.appendChild(headRow);
+            tabla.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            [3, 2, 1].forEach(function (probabilidad) {
+                const tr = document.createElement("tr");
+                const th = document.createElement("th");
+                th.className = "border border-slate-200 px-3 py-2 bg-slate-50 text-left font-medium";
+                th.textContent = "Probabilidad " + ETIQUETA[probabilidad];
+                tr.appendChild(th);
+                [1, 2, 3].forEach(function (impacto) {
+                    const cantidad = lista.filter(function (r) {
+                        return r.probabilidad === probabilidad && r.impacto === impacto;
+                    }).length;
+                    const td = document.createElement("td");
+                    const nivel = nivelRiesgo(probabilidad * impacto);
+                    td.className = "border border-slate-200 px-3 py-2 text-center font-semibold " + claseNivel(nivel);
+                    td.textContent = String(cantidad);
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            tabla.appendChild(tbody);
+        }
+
+        function pintarControles() {
+            const contenedor = document.getElementById("controles-container");
+            const top = topCinco();
+            vaciar(contenedor);
+            if (!top.length) {
+                const p = document.createElement("p");
+                p.className = "text-sm text-slate-500";
+                p.textContent = "Asocia amenazas para obtener los riesgos críticos.";
+                contenedor.appendChild(p);
+                return;
+            }
+            if (top.length < 5) {
+                const aviso = document.createElement("p");
+                aviso.className = "text-sm text-amber-800";
+                aviso.textContent = "Hay " + top.length + " riesgos. El requisito pide controles para los 5 más críticos.";
+                contenedor.appendChild(aviso);
+            }
+            top.forEach(function (riesgo, index) {
+                const control = asegurarControl(riesgo.id);
+                const card = document.createElement("article");
+                card.className = "border border-slate-200 rounded-lg p-4 bg-slate-50";
+                const titulo = document.createElement("h3");
+                titulo.className = "font-semibold text-slate-900";
+                titulo.textContent = "Riesgo " + (index + 1) + ": " + riesgo.amenaza + " en " + riesgo.asset.nombre;
+                const badge = document.createElement("span");
+                badge.className = "ml-2 px-2 py-0.5 rounded text-xs font-semibold " + claseNivel(riesgo.nivel);
+                badge.textContent = riesgo.nivel + " (" + riesgo.score + ")";
+                titulo.appendChild(badge);
+                card.appendChild(titulo);
+                const grid = document.createElement("div");
+                grid.className = "grid grid-cols-1 md:grid-cols-3 gap-3 mt-3";
+                const select = document.createElement("select");
+                select.dataset.riskId = riesgo.id;
+                select.dataset.field = "tipo";
+                select.className = "border border-slate-300 rounded-md px-3 py-2 bg-white";
+                select.setAttribute("aria-label", "Tipo de control del riesgo " + (index + 1));
+                ["Control General", "Control de Aplicación"].forEach(function (tipo) {
+                    const opt = document.createElement("option");
+                    opt.value = tipo;
+                    opt.textContent = tipo;
+                    if (control.tipo === tipo) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                const input = document.createElement("input");
+                input.type = "text";
+                input.maxLength = 240;
+                input.dataset.riskId = riesgo.id;
+                input.dataset.field = "descripcion";
+                input.value = control.descripcion;
+                input.placeholder = "Describe el procedimiento que reduce este riesgo";
+                input.className = "md:col-span-2 border border-slate-300 rounded-md px-3 py-2 bg-white";
+                input.setAttribute("aria-label", "Procedimiento del riesgo " + (index + 1));
+                grid.appendChild(select);
+                grid.appendChild(input);
+                card.appendChild(grid);
+                contenedor.appendChild(card);
+            });
+        }
+
+        function pintarHallazgos() {
+            document.getElementById("hallazgos-auto").textContent = parrafoHallazgos(riesgosOrdenados());
+        }
+
+        function syncCampos() {
+            const resumen = document.getElementById("resumen");
+            const github = document.getElementById("github-link");
+            const vercel = document.getElementById("app-link");
+            if (document.activeElement !== resumen) resumen.value = state.resumen;
+            if (document.activeElement !== github) github.value = state.github;
+            if (document.activeElement !== vercel) vercel.value = state.vercel;
+            document.getElementById("resumen-count").textContent = resumen.value.length + " / " + RESUMEN_MAX;
+        }
+
+        function render() {
+            pintarCumplimiento();
+            pintarActivos();
+            pintarSelectActivos();
+            pintarRiesgos();
+            pintarCalor();
+            pintarControles();
+            pintarHallazgos();
+            syncCampos();
+        }
+
+        function onAddAsset(event) {
+            event.preventDefault();
+            const nombre = document.getElementById("activo-nombre").value.trim();
+            const tipo = document.getElementById("activo-tipo").value;
+            const error = document.getElementById("activo-error");
+            if (!nombre) {
+                error.textContent = "Escribe el nombre del activo.";
+                return;
+            }
+            state.assets.push({ id: nuevoId("a"), nombre: nombre, tipo: tipo });
+            error.textContent = "";
+            event.target.reset();
+            guardar();
+            render();
+        }
+
+        function onAddThreat(event) {
+            event.preventDefault();
+            const assetId = document.getElementById("select-activo").value;
+            const amenaza = document.getElementById("amenaza").value.trim();
+            const error = document.getElementById("amenaza-error");
+            if (!assetId) {
+                error.textContent = "Registra primero un activo.";
+                return;
+            }
+            if (!amenaza) {
+                error.textContent = "Escribe la amenaza.";
+                return;
+            }
+            const duplicada = state.risks.some(function (riesgo) {
+                return riesgo.assetId === assetId && riesgo.amenaza.toLowerCase() === amenaza.toLowerCase();
+            });
+            if (duplicada) {
+                error.textContent = "Esa amenaza ya está asociada a este activo.";
+                return;
+            }
+            const id = nuevoId("r");
+            state.risks.push({
+                id: id,
+                assetId: assetId,
+                amenaza: amenaza,
+                probabilidad: Number(document.getElementById("probabilidad").value),
+                impacto: Number(document.getElementById("impacto").value)
+            });
+            asegurarControl(id);
+            error.textContent = "";
+            document.getElementById("amenaza").value = "";
+            guardar();
+            render();
+        }
+
+        function eliminarActivo(id) {
+            const removidos = state.risks.filter(function (r) { return r.assetId === id; }).map(function (r) { return r.id; });
+            state.assets = state.assets.filter(function (asset) { return asset.id !== id; });
+            state.risks = state.risks.filter(function (riesgo) { return riesgo.assetId !== id; });
+            removidos.forEach(function (riskId) { delete state.controles[riskId]; });
+            guardar();
+            render();
+        }
+
+        function eliminarRiesgo(id) {
+            state.risks = state.risks.filter(function (riesgo) { return riesgo.id !== id; });
+            delete state.controles[id];
+            guardar();
+            render();
+        }
+
+        function onCambioRiesgo(event) {
+            const el = event.target;
+            const id = el.dataset.riskId;
+            if (!id || (el.dataset.field !== "probabilidad" && el.dataset.field !== "impacto")) return;
+            const riesgo = state.risks.find(function (item) { return item.id === id; });
+            if (!riesgo) return;
+            riesgo[el.dataset.field] = Number(el.value);
+            guardar();
+            render();
+        }
+
+        function onControl(event) {
+            const el = event.target;
+            const id = el.dataset.riskId;
+            if (!id) return;
+            const control = asegurarControl(id);
+            if (el.dataset.field === "tipo") control.tipo = el.value;
+            if (el.dataset.field === "descripcion") control.descripcion = el.value;
+            guardar();
+            pintarCumplimiento();
+        }
+
+        function nodo(tag, estilos, texto) {
+            const n = document.createElement(tag);
+            Object.assign(n.style, estilos);
+            if (texto != null) n.textContent = texto;
+            return n;
+        }
+
+        function crearInforme() {
+            const lista = riesgosOrdenados();
+            const top = lista.slice(0, 5);
+            const doc = nodo("div", {
+                width: "680px",
+                background: "#ffffff",
+                color: "#1f2937",
+                fontFamily: "Arial, sans-serif",
+                fontSize: "11px",
+                lineHeight: "1.35",
+                padding: "4px"
+            });
+
+            doc.appendChild(nodo("p", { margin: "0", color: "#64748b", fontSize: "10px" }, "Metodología MAGERIT v3 · Enfoque cualitativo"));
+            doc.appendChild(nodo("h1", { margin: "2px 0 0", color: "#0f2744", fontSize: "18px", lineHeight: "1.2" }, "Plataforma SaaS de Gestión de Riesgos"));
+            const fecha = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+            doc.appendChild(nodo("p", { margin: "2px 0 10px", color: "#475569" }, "Cliente: Bufete de Abogados · Informe para la dirección · " + fecha));
+
+            doc.appendChild(nodo("h2", { margin: "0 0 4px", fontSize: "13px", color: "#0f2744" }, "1. Hallazgos"));
+            doc.appendChild(nodo("p", { margin: "0 0 10px" }, parrafoHallazgos(lista)));
+
+            doc.appendChild(nodo("h2", { margin: "0 0 4px", fontSize: "13px", color: "#0f2744" }, "2. Matriz de riesgo inherente"));
+            const tabla = nodo("table", { width: "100%", borderCollapse: "collapse", margin: "0 0 10px", fontSize: "10px" });
+            const thead = document.createElement("thead");
+            const head = document.createElement("tr");
+            ["#", "Activo", "Amenaza", "Probabilidad", "Impacto", "Riesgo"].forEach(function (texto) {
+                const th = nodo("th", {
+                    border: "1px solid #cbd5e1",
+                    background: "#0f2744",
+                    color: "#ffffff",
+                    textAlign: "left",
+                    padding: "4px 6px"
+                }, texto);
+                head.appendChild(th);
+            });
+            thead.appendChild(head);
+            tabla.appendChild(thead);
+            const tbody = document.createElement("tbody");
+            lista.forEach(function (riesgo, index) {
+                const tr = document.createElement("tr");
+                tr.style.pageBreakInside = "avoid";
+                tr.style.background = index < 5 ? "#f8fafc" : "#ffffff";
+                [String(index + 1), riesgo.asset.nombre, riesgo.amenaza, ETIQUETA[riesgo.probabilidad], ETIQUETA[riesgo.impacto], riesgo.nivel + " (" + riesgo.score + ")"].forEach(function (texto) {
+                    tr.appendChild(nodo("td", {
+                        border: "1px solid #e2e8f0",
+                        padding: "3px 6px",
+                        verticalAlign: "top"
+                    }, texto));
+                });
+                tbody.appendChild(tr);
+            });
+            if (!lista.length) {
+                const tr = document.createElement("tr");
+                const td = nodo("td", { border: "1px solid #e2e8f0", padding: "4px 6px" }, "Sin amenazas registradas.");
+                td.colSpan = 6;
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            }
+            tabla.appendChild(tbody);
+            doc.appendChild(tabla);
+
+            doc.appendChild(nodo("h2", { margin: "0 0 4px", fontSize: "13px", color: "#0f2744" }, "3. Controles de los 5 riesgos más críticos"));
+            if (!top.length) {
+                doc.appendChild(nodo("p", { margin: "0 0 10px" }, "No hay riesgos para proponer controles."));
+            }
+            top.forEach(function (riesgo, index) {
+                const control = asegurarControl(riesgo.id);
+                const bloque = nodo("div", { margin: "0 0 6px", pageBreakInside: "avoid" });
+                bloque.appendChild(nodo("p", { margin: "0", fontWeight: "700" }, (index + 1) + ". " + riesgo.asset.nombre + " — " + riesgo.amenaza + " (" + riesgo.nivel + ", " + riesgo.score + ")"));
+                bloque.appendChild(nodo("p", { margin: "0" }, control.tipo + ". " + (control.descripcion.trim() || "Sin definir")));
+                doc.appendChild(bloque);
+            });
+
+            doc.appendChild(nodo("h2", { margin: "8px 0 4px", fontSize: "13px", color: "#0f2744" }, "4. Conclusiones para la dirección"));
+            doc.appendChild(nodo("p", { margin: "0 0 10px", whiteSpace: "pre-wrap" }, state.resumen.trim() || "Sin conclusiones registradas."));
+
+            const github = state.github.trim();
+            const vercel = state.vercel.trim();
+            if (github || vercel) {
+                doc.appendChild(nodo("h2", { margin: "0 0 4px", fontSize: "13px", color: "#0f2744" }, "5. Publicación"));
+                if (github) doc.appendChild(nodo("p", { margin: "0" }, "Repositorio GitHub: " + github));
+                if (vercel) doc.appendChild(nodo("p", { margin: "0" }, "Aplicación: " + vercel));
+            }
+            doc.appendChild(nodo("p", { margin: "12px 0 0", color: "#64748b", fontSize: "10px", borderTop: "1px solid #e2e8f0", paddingTop: "6px" }, "Documento de uso interno para la dirección del bufete. Riesgo inherente = probabilidad × impacto."));
+            return doc;
+        }
+
+        async function generarPDF() {
+            const status = document.getElementById("pdf-status");
+            const boton = document.getElementById("btn-pdf");
+            if (typeof html2pdf === "undefined") {
+                status.className = "text-sm mt-3 text-red-700";
+                status.textContent = "No se pudo cargar el generador de PDF. Revisa la conexión e inténtalo de nuevo.";
+                return;
+            }
+            boton.disabled = true;
+            status.className = "text-sm mt-3 text-slate-600";
+            status.textContent = "Generando informe...";
+            const overlay = nodo("div", {
+                position: "fixed",
+                left: "0",
+                top: "0",
+                background: "#ffffff",
+                zIndex: "50",
+                padding: "12px"
+            });
+            const informe = crearInforme();
+            overlay.appendChild(informe);
+            document.body.appendChild(overlay);
+            window.scrollTo(0, 0);
+            const opciones = {
+                margin: 8,
+                filename: "Informe_Ejecutivo_MAGERIT.pdf",
+                image: { type: "jpeg", quality: 0.95 },
+                html2canvas: { scale: 2, backgroundColor: "#ffffff", scrollY: 0 },
+                jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+                pagebreak: { mode: ["css", "legacy"] }
+            };
+            try {
+                const pdf = await html2pdf().set(opciones).from(informe).toPdf().get("pdf");
+                const paginas = pdf.internal.getNumberOfPages();
+                if (paginas > 2) {
+                    status.className = "text-sm mt-3 text-red-700";
+                    status.textContent = "El informe ocupa " + paginas + " páginas. Acorta las conclusiones o los controles para mantener el máximo de 2.";
+                    return;
+                }
+                pdf.save("Informe_Ejecutivo_MAGERIT.pdf");
+                status.className = "text-sm mt-3 text-emerald-800";
+                status.textContent = "Informe generado (" + paginas + (paginas === 1 ? " página)." : " páginas).");
+            } catch (error) {
+                status.className = "text-sm mt-3 text-red-700";
+                status.textContent = "No se pudo generar el PDF. Revisa la conexión e inténtalo de nuevo.";
+            } finally {
+                overlay.remove();
+                boton.disabled = false;
+            }
+        }
+
+        document.getElementById("form-activo").addEventListener("submit", onAddAsset);
+        document.getElementById("form-amenaza").addEventListener("submit", onAddThreat);
+        document.getElementById("tabla-activos").addEventListener("click", function (event) {
+            const boton = event.target.closest("[data-eliminar-activo]");
+            if (boton) eliminarActivo(boton.dataset.eliminarActivo);
+        });
+        document.getElementById("tabla-riesgos").addEventListener("click", function (event) {
+            const boton = event.target.closest("[data-eliminar-riesgo]");
+            if (boton) eliminarRiesgo(boton.dataset.eliminarRiesgo);
+        });
+        document.getElementById("tabla-riesgos").addEventListener("change", onCambioRiesgo);
+        document.getElementById("controles-container").addEventListener("input", onControl);
+        document.getElementById("controles-container").addEventListener("change", onControl);
+        document.getElementById("resumen").addEventListener("input", function (event) {
+            state.resumen = event.target.value;
+            document.getElementById("resumen-count").textContent = state.resumen.length + " / " + RESUMEN_MAX;
+            guardar();
+        });
+        document.getElementById("github-link").addEventListener("input", function (event) {
+            state.github = event.target.value;
+            guardar();
+        });
+        document.getElementById("app-link").addEventListener("input", function (event) {
+            state.vercel = event.target.value;
+            guardar();
+        });
+        document.getElementById("btn-pdf").addEventListener("click", generarPDF);
+        document.getElementById("btn-restaurar").addEventListener("click", function () {
+            if (!window.confirm("Se reemplazarán los datos actuales por el ejemplo de 10 activos del bufete.")) return;
+            state = crearEstadoInicial();
+            guardar();
+            render();
+            document.getElementById("pdf-status").textContent = "";
+        });
+
+        render();
+    </script>
+</body>
+</html>
